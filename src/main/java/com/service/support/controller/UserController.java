@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.service.support.entity.Otp;
 import com.service.support.entity.User;
 import com.service.support.response.BaseApiResponse;
 import com.service.support.response.UserResponse;
+import com.service.support.service.NotificationService;
 import com.service.support.service.UserService;
 
 @RestController
@@ -24,6 +26,9 @@ public class UserController {
 	
 	@Autowired
     UserService userService;
+	
+	@Autowired
+	NotificationService notificationService;
 
 	
 	@CrossOrigin(origins = "*")
@@ -42,7 +47,22 @@ public class UserController {
 	
 	
 	@CrossOrigin(origins = "*")
-	@GetMapping(path = "/get a user detail by id.")
+	@GetMapping(path = "/verification-email")
+	public ResponseEntity<BaseApiResponse> getVerification(@RequestParam(required = true) String otpText, String email,
+			HttpServletRequest request){ 
+		
+		Otp otp = notificationService.verifyOtp(email, otpText);
+		if(otp!=null) {
+			userService.setUserVerified(email);
+			BaseApiResponse baseApiResponse= new BaseApiResponse(otp, "User email verified.");
+			return new ResponseEntity<BaseApiResponse>(baseApiResponse, HttpStatus.OK);
+		}
+		return new ResponseEntity<BaseApiResponse>(new BaseApiResponse(otp, "wrong OTP."), HttpStatus.UNAUTHORIZED);
+		
+	}
+	
+	@CrossOrigin(origins = "*")
+	@PostMapping(path = "/userid")
 	public ResponseEntity<BaseApiResponse> getSupprtById(@RequestParam(required = true) long userId,
 			HttpServletRequest request) {
 		UserResponse response = userService.getUserById(userId);

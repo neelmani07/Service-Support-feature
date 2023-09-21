@@ -38,4 +38,7 @@ public class User {
 
 	@Column(name = "status")
 	private boolean status;
+	
+	@Column(name = "isVerified")
+	private boolean isVerified;
 }

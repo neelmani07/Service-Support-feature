@@ -17,6 +17,9 @@ public class UserService {
 	
 	@Autowired
     UserRepository userRepository;
+	
+	@Autowired
+	NotificationService notificationService; 
 
 	public UserResponse getUserById(long supportId) {
 		User user = userRepository.findByIdAndStatus(supportId, true);
@@ -41,7 +44,11 @@ public class UserService {
 		if(lastName!=null)newUser.setLastName(lastName);
 		if(mobNumber!=null)newUser.setMobileNumber(mobNumber);
 		newUser.setStatus(true);
+		newUser.setVerified(false);
 		newUser = userRepository.save(newUser);
+		String otp = notificationService.generateOTPMessage();
+		notificationService.sendEmail(email, otp, "OTP verification");
+		notificationService.registerOtpwithUser(otp, email);
 		return newUser;
 	}
 
@@ -58,5 +65,11 @@ public class UserService {
 			user.setStatus(false);
 			userRepository.save(user);
 		}
+	}
+
+	public void setUserVerified(String email) {
+		User user = userRepository.findByEmailAndStatus(email, true);
+		user.setVerified(true);
+		userRepository.save(user);
 	}
 }
